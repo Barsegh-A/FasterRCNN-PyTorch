@@ -13,19 +13,25 @@ def get_iou(boxes1, boxes2):
     :param boxes2: (Tensor of shape M x 4)
     :return: IOU matrix of shape N x M
     """
-    # Area of boxes (x2-x1)*(y2-y1)
-    area1 = (boxes1[:, 2] - boxes1[:, 0]) * (boxes1[:, 3] - boxes1[:, 1])  # (N,)
-    area2 = (boxes2[:, 2] - boxes2[:, 0]) * (boxes2[:, 3] - boxes2[:, 1])  # (M,)
+    # bbox coordinates: x1, y1, x2, y2
+
+    #TODO compute the areas of all boxes
+    area1 = ... # (N,)
+    area2 = ... # (M,)
     
-    # Get top left x1,y1 coordinate
-    x_left = torch.max(boxes1[:, None, 0], boxes2[:, 0])  # (N, M)
-    y_top = torch.max(boxes1[:, None, 1], boxes2[:, 1])  # (N, M)
+    #TODO Get top left x1,y1 coordinate
+    x_left = ...  # (N, M)
+    y_top = ...  # (N, M)
     
-    # Get bottom right x2,y2 coordinate
-    x_right = torch.min(boxes1[:, None, 2], boxes2[:, 2])  # (N, M)
-    y_bottom = torch.min(boxes1[:, None, 3], boxes2[:, 3])  # (N, M)
+    #TODO Get bottom right x2,y2 coordinate
+    x_right = ...  # (N, M)
+    y_bottom = ...  # (N, M)
+
+    #TODO Get the dimensions of intersection box. Make sure to avoid negative values.
+    intersection_width = ...
+    intersection_height = ...
     
-    intersection_area = (x_right - x_left).clamp(min=0) * (y_bottom - y_top).clamp(min=0)  # (N, M)
+    intersection_area = intersection_width * intersection_height  # (N, M)
     union = area1[:, None] + area2 - intersection_area  # (N, M)
     iou = intersection_area / union  # (N, M)
     return iou
@@ -55,10 +61,11 @@ def boxes_to_transformation_targets(ground_truth_boxes, anchors_or_proposals):
     gt_center_x = ground_truth_boxes[:, 0] + 0.5 * gt_widths
     gt_center_y = ground_truth_boxes[:, 1] + 0.5 * gt_heights
     
-    targets_dx = (gt_center_x - center_x) / widths
-    targets_dy = (gt_center_y - center_y) / heights
-    targets_dw = torch.log(gt_widths / widths)
-    targets_dh = torch.log(gt_heights / heights)
+    #TODO Compute the target trasnformations
+    targets_dx = ...
+    targets_dy = ...
+    targets_dw = ...
+    targets_dh = ...
     regression_targets = torch.stack((targets_dx, targets_dy, targets_dw, targets_dh), dim=1)
     return regression_targets
 
@@ -91,10 +98,11 @@ def apply_regression_pred_to_anchors_or_proposals(box_transform_pred, anchors_or
     dw = torch.clamp(dw, max=math.log(1000.0 / 16))
     dh = torch.clamp(dh, max=math.log(1000.0 / 16))
     
-    pred_center_x = dx * w[:, None] + center_x[:, None]
-    pred_center_y = dy * h[:, None] + center_y[:, None]
-    pred_w = torch.exp(dw) * w[:, None]
-    pred_h = torch.exp(dh) * h[:, None]
+    #TODO Apply the predicted transformation to proposals/anchors
+    pred_center_x = ...
+    pred_center_y = ...
+    pred_w = ...
+    pred_h = ...
     # pred_center_x -> (num_anchors_or_proposals, num_classes)
     
     pred_box_x1 = pred_center_x - 0.5 * pred_w
@@ -495,18 +503,16 @@ class RegionProposalNetwork(nn.Module):
             
             sampled_idxs = torch.where(sampled_pos_idx_mask | sampled_neg_idx_mask)[0]
             
-            localization_loss = (
-                    torch.nn.functional.smooth_l1_loss(
-                        box_transform_pred[sampled_pos_idx_mask],
-                        regression_targets[sampled_pos_idx_mask],
-                        beta=1 / 9,
-                        reduction="sum",
-                    )
-                    / (sampled_idxs.numel())
+            
+            #TODO Apply smooth L1 loss on positive samples
+            localization_loss = (  
+                ...                
             ) 
 
-            cls_loss = torch.nn.functional.binary_cross_entropy_with_logits(cls_scores[sampled_idxs].flatten(),
-                                                                            labels_for_anchors[sampled_idxs].flatten())
+            localization_loss = localization_loss / (sampled_idxs.numel())
+
+            #TODO Apply binary corss entropy loss on all samples
+            cls_loss = ...
 
             rpn_output['rpn_classification_loss'] = cls_loss
             rpn_output['rpn_localization_loss'] = localization_loss
@@ -534,10 +540,14 @@ class ROIHead(nn.Module):
         self.pool_size = model_config['roi_pool_size']
         self.fc_inner_dim = model_config['fc_inner_dim']
         
-        self.fc6 = nn.Linear(in_channels * self.pool_size * self.pool_size, self.fc_inner_dim)
-        self.fc7 = nn.Linear(self.fc_inner_dim, self.fc_inner_dim)
-        self.cls_layer = nn.Linear(self.fc_inner_dim, self.num_classes)
-        self.bbox_reg_layer = nn.Linear(self.fc_inner_dim, self.num_classes * 4)
+        #TODO Initialize a fully connected layer with input size as the pooled features: in_channel*pool_size*pool_size and output size fc_inner_dim
+        self.fc6 = ...
+        #TODO Initialize a fully connected layer with output size the same as input
+        self.fc7 = ...
+        
+        #TODO Initialize classification and regression heads
+        self.cls_layer = ...
+        self.bbox_reg_layer = ...
         
         torch.nn.init.normal_(self.cls_layer.weight, std=0.01)
         torch.nn.init.constant_(self.cls_layer.bias, 0)

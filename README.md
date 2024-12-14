@@ -120,22 +120,6 @@ This repo has some differences from actual Faster RCNN paper.
 * ```python -m tools.infer --evaluate False --infer_samples True``` for generating inference predictions
 * ```python -m tools.infer --evaluate True --infer_samples False``` for evaluating on test dataset
 
-## Using torchvision FasterRCNN 
-* For training/inference using torchvision faster rcnn codebase, use the below commands passing the desired configuration file as the config argument.
-* ```python -m tools.train_torchvision_frcnn``` for training using torchvision pretrained Faster R-CNN class on voc dataset
-   * This uses the following arguments other than config file
-   * --use_resnet50_fpn
-      * True(default) - Use pretrained torchvision faster rcnn
-      * False - Build your own custom model using torchvision faster rcnn class)
-* ```python -m tools.infer_torchvision_frcnn``` for inference and testing purposes. Pass the desired configuration file as the config argument.
-   * This uses the following arguments other than config file
-   * --use_resnet50_fpn
-      * True(default) - Use pretrained torchvision faster rcnn
-      * False - Build your own custom model using torchvision faster rcnn class)
-      * Should be same value as used during training
-   * --evaluate (Whether to evaluate mAP on test dataset or not, default value is False)
-   * -- infer_samples (Whether to generate predicitons on some sample test images, default value is True)
-
 ## Configuration
 * ```config/voc.yaml``` - Allows you to play with different components of faster r-cnn on voc dataset  
 

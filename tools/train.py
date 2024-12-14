@@ -48,7 +48,7 @@ def train(args):
     faster_rcnn_model.to(device)
 
     if not os.path.exists(train_config['task_name']):
-        os.mkdir(train_config['task_name'])
+        os.makedirs(train_config['task_name'], exist_ok=True)
     optimizer = torch.optim.SGD(lr=train_config['lr'],
                                 params=filter(lambda p: p.requires_grad,
                                               faster_rcnn_model.parameters()),
